@@ -1,0 +1,32 @@
+# -*- coding: utf-8 -*-
+import scrapy
+
+from tutorial.items import DmozItem
+from scrapy.spider import BaseSpider
+from scrapy.selector import HtmlXPathSelector
+from scrapy.http.request import Request
+
+import json
+dict = {"hello": "日本語"}
+outp = {}
+
+class DmozSpider(scrapy.Spider):
+    name = "dmoz"
+    allowed_domains = ["logsoku.com"]
+    start_urls = [
+                  "http://www.logsoku.com/search?q=%E5%B7%A8%E4%BA%BA%E5%B0%8F%E7%AC%A0%E5%8E%9F&bbs=livejupiter&sr=10"
+    ]
+    
+    
+    def parse(self, response):
+        filename = response.url.split("/")[-2]
+        hxs = HtmlXPathSelector(response)
+        sel = hxs.xpath('//ul/li')
+        items = []
+        
+        for sel in sel:
+            item = DmozItem()
+            item['title'] = sel.xpath('//a[@class="thread"]').extract()
+            outp = (str(item['title']).decode('unicode_escape').encode('utf-8'))
+            item['link'] = sel.xpath('a/@href').extract()
+            items.append(item)
